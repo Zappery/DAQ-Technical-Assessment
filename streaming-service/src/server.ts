@@ -14,7 +14,11 @@ tcpServer.on('connection', (socket) => {
 
         // HINT: what happens if the JSON in the received message is formatted incorrectly?
         // HINT: see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch
-        let currJSON = JSON.parse(msg.toString());
+        let currJSON = JSON.stringify(msg.toString());
+        
+        
+        // console.log(currJSON + 'test');
+        // no way all I did was just change parse to stringify and it works? still have no idea what currJSON does
 
         websocketServer.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {
@@ -42,5 +46,4 @@ websocketServer.on('connection', async (ws: WebSocket) => {
 tcpServer.listen(TCP_PORT, () => {
     console.log(`TCP server listening on port ${TCP_PORT}`);
 });
-
 
