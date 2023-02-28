@@ -10,7 +10,6 @@ tcpServer.on('connection', (socket) => {
     console.log('TCP client connected');
     
     socket.on('data', (msg) => {
-        
         // makes it a string first so later on can be used
         let tempData = msg.toString();
         console.log(tempData);
@@ -19,14 +18,24 @@ tcpServer.on('connection', (socket) => {
         let reg = /\d+/g;
         let result = tempData.match(reg);
         console.log(result);
+        
+        // need '!' to remove null type of result
+        let stringToNumber = result![0] + '.' + result![1];
+
+        // converts string to floating point (+ operator)
+        var floatPointInt = +stringToNumber;
+        let batTemp = console.log(floatPointInt);
+        batTemp
+
+        let tStamp = +result![2]
+        console.log(tStamp)
 
         // HINT: what happens if the JSON in the received message is formatted incorrectly?
         // HINT: see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch
         let currJSON = JSON.stringify(msg.toString());
         
-        
         // console.log(currJSON + 'test');
-        // no way all I did was just change parse to stringify and it works? still have no idea what currJSON does
+        // no way all I did was just change parse to stringify and it works? same result without try catch?
 
         websocketServer.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {
