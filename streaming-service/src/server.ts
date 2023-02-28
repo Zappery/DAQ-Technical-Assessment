@@ -10,7 +10,15 @@ tcpServer.on('connection', (socket) => {
     console.log('TCP client connected');
     
     socket.on('data', (msg) => {
-        console.log(msg.toString());
+        
+        // makes it a string first so later on can be used
+        let tempData = msg.toString();
+        console.log(tempData);
+
+        // getting numbers from string
+        let reg = /\d+/g;
+        let result = tempData.match(reg);
+        console.log(result);
 
         // HINT: what happens if the JSON in the received message is formatted incorrectly?
         // HINT: see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch
