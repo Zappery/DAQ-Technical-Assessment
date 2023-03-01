@@ -29,6 +29,19 @@ tcpServer.on('connection', (socket) => {
 
         let tStamp = +result![2]
         console.log(tStamp)
+    
+
+        // need to convert back to string after comparison to write to log
+        let data = 'test value'
+
+        const fs = require('fs');
+        fs.writeFile("incidents.log", data, function(err: any) {
+        if(err)
+            return console.log(err);
+        else {
+        console.log("The file was saved!");
+        }}); 
+
 
         // HINT: what happens if the JSON in the received message is formatted incorrectly?
         // HINT: see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch
