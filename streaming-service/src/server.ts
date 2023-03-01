@@ -6,6 +6,10 @@ const TCP_PORT = parseInt(process.env.TCP_PORT || '12000', 10);
 const tcpServer = net.createServer();
 const websocketServer = new WebSocketServer({ port: 8080 });
 
+// reset incidents.log
+const fs = require('fs')
+fs.writeFile('incidents.log', '', function() {console.log('done')})
+
 tcpServer.on('connection', (socket) => {
     console.log('TCP client connected');
     
@@ -18,29 +22,73 @@ tcpServer.on('connection', (socket) => {
         let reg = /\d+/g;
         let result = tempData.match(reg);
         console.log(result);
-        
+
+        let battery = +result![0];
+
+        if (battery > 80) {
+           var tStamp = +result![1];
+           console.log(battery + 'error over, stamp ', tStamp);
+           
+           let makeStringAgain = tStamp.toString();
+           let data = 'Error at ' + makeStringAgain + '\n';
+           const fs = require('fs');
+           fs.writeFile("incidents.log", data, {flag: 'a'}, function(err: any) {
+           if(err)
+               return console.log(err);
+           else {
+           console.log("Written log");
+           }});
+        }
+        else if (battery < 20) {
+            var tStamp = +result![1];
+            console.log(battery + 'error low, stamp ', tStamp);
+
+            let makeStringAgain = tStamp.toString();
+            let data = 'Error at ' + makeStringAgain + '\n';
+            const fs = require('fs');
+            fs.writeFile("incidents.log", data, {flag: 'a'}, function(err: any) {
+            if(err)
+                return console.log(err);
+            else {
+            console.log("Written log");
+            }}); 
+        }
+        else {
+            let batTemp = result![0] + '.' + result![1];
+            console.log(batTemp + 'else works');
+        }
+
         // need '!' to remove null type of result
         let stringToNumber = result![0] + '.' + result![1];
 
         // converts string to floating point (+ operator)
-        var floatPointInt = +stringToNumber;
-        let batTemp = console.log(floatPointInt);
-        batTemp
+        // var floatPointInt = +stringToNumber;
+        // let batTemp = console.log(floatPointInt);
+        // batTemp;
 
-        let tStamp = +result![2]
-        console.log(tStamp)
-    
-
+        // let tStamp = +result![2];
+        // console.log(tStamp + 'tStamp');
+        
         // need to convert back to string after comparison to write to log
-        let data = 'test value'
+        // let data = 'Error at: ';
 
-        const fs = require('fs');
-        fs.writeFile("incidents.log", data, function(err: any) {
-        if(err)
-            return console.log(err);
-        else {
-        console.log("The file was saved!");
-        }}); 
+        // if (fault = true) {
+        //     const fs = require('fs');
+        //     fs.writeFile("incidents.log", data, function(err: any) {
+        //     if(err)
+        //         return console.log('what');
+        //     else {
+        //     console.log("The file was saved!");
+        //     }}); 
+        // }
+
+        // const fs = require('fs');
+        // fs.writeFile("incidents.log", data, function(err: any) {
+        // if(err)
+        //     return console.log(err);
+        // else {
+        // console.log("The file was saved!");
+        // }}); 
 
 
         // HINT: what happens if the JSON in the received message is formatted incorrectly?
