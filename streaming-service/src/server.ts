@@ -8,7 +8,9 @@ const websocketServer = new WebSocketServer({ port: 8080 });
 
 // reset incidents.log
 const fs = require('fs')
-fs.writeFile('incidents.log', '', function() {console.log('done')})
+fs.writeFile('incidents.log', '', function() {console.log('reset incidents.log')})
+
+let errorCount = 0;
 
 tcpServer.on('connection', (socket) => {
     console.log('TCP client connected');
@@ -23,73 +25,86 @@ tcpServer.on('connection', (socket) => {
         let result = tempData.match(reg);
         console.log(result);
 
+        const time = new Date()
+
+        let error: boolean;
+
         let battery = +result![0];
 
         if (battery > 80) {
            var tStamp = +result![1];
-           console.log(battery + 'error over, stamp ', tStamp);
+           console.log(battery + ' error over, stamp ', tStamp);
+
            
-           let makeStringAgain = tStamp.toString();
-           let data = 'Error at ' + makeStringAgain + '\n';
-           const fs = require('fs');
-           fs.writeFile("incidents.log", data, {flag: 'a'}, function(err: any) {
-           if(err)
-               return console.log(err);
-           else {
-           console.log("Written log");
-           }});
+            let initial = 0
+            let startTime = time.getTime()
+            let errTime = tStamp;
+            let endTime: number = tStamp + 5000;
+        
+            if (initial < tStamp && endTime > tStamp) {
+                var valid = startTime <= errTime && endTime >= errTime;
+
+                if (valid = true) {
+                    ++errorCount;
+                    if (errorCount > 3) {
+                        // write to log
+                        let makeStringAgain = tStamp.toString();
+                        let data = 'Error at ' + makeStringAgain + '\n';
+                        const fs = require('fs');
+                        fs.writeFile("incidents.log", data, {flag: 'a'}, function(err: any) {
+                        if(err)
+                            return console.log(err);
+                        else {
+                        console.log("Written log");
+                        errorCount = 0;
+                        }})
+                    }
+                }
+            }
+            else {
+                errorCount = 0;
+            }
         }
         else if (battery < 20) {
             var tStamp = +result![1];
-            console.log(battery + 'error low, stamp ', tStamp);
+            console.log(battery + ' error low, stamp ', tStamp);
 
-            let makeStringAgain = tStamp.toString();
-            let data = 'Error at ' + makeStringAgain + '\n';
-            const fs = require('fs');
-            fs.writeFile("incidents.log", data, {flag: 'a'}, function(err: any) {
-            if(err)
-                return console.log(err);
+            let startTime = time.getTime();
+            let errTime = tStamp;
+            let endTime: number = startTime + 5000;
+        
+            if (errTime - startTime < 5000) {
+                var valid = startTime <= errTime && endTime >= errTime;
+
+                if (valid = true) {
+                    ++errorCount;
+                    if (errorCount > 3) {
+                        // write to log
+                        let makeStringAgain = tStamp.toString();
+                        let data = 'Error at ' + makeStringAgain + '\n';
+                        const fs = require('fs');
+                        fs.writeFile("incidents.log", data, {flag: 'a'}, function(err: any) {
+                        if(err)
+                            return console.log(err);
+                        else {
+                        console.log("Written log");
+                        errorCount = 0;
+                        }})
+                    }
+                }
+            }
             else {
-            console.log("Written log");
-            }}); 
+                errorCount = 0;
+            }
         }
         else {
             let batTemp = result![0] + '.' + result![1];
-            console.log(batTemp + 'else works');
+            console.log(batTemp + '  batt is found');
+            error = false
         }
 
         // need '!' to remove null type of result
         let stringToNumber = result![0] + '.' + result![1];
-
-        // converts string to floating point (+ operator)
-        // var floatPointInt = +stringToNumber;
-        // let batTemp = console.log(floatPointInt);
-        // batTemp;
-
-        // let tStamp = +result![2];
-        // console.log(tStamp + 'tStamp');
-        
-        // need to convert back to string after comparison to write to log
-        // let data = 'Error at: ';
-
-        // if (fault = true) {
-        //     const fs = require('fs');
-        //     fs.writeFile("incidents.log", data, function(err: any) {
-        //     if(err)
-        //         return console.log('what');
-        //     else {
-        //     console.log("The file was saved!");
-        //     }}); 
-        // }
-
-        // const fs = require('fs');
-        // fs.writeFile("incidents.log", data, function(err: any) {
-        // if(err)
-        //     return console.log(err);
-        // else {
-        // console.log("The file was saved!");
-        // }}); 
-
 
         // HINT: what happens if the JSON in the received message is formatted incorrectly?
         // HINT: see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch
